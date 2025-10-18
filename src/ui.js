@@ -18,6 +18,8 @@ export function initUI(game) {
   if (currentUser) {
     elements.userDisplay.textContent = `@${currentUser}`;
     hide(elements.usernameModal);
+    // Ensure server knows this user; ignore errors silently
+    (async () => { try { await apiRegister(currentUser); } catch {} })();
   } else {
     show(elements.usernameModal);
   }
