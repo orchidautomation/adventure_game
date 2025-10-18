@@ -37,6 +37,7 @@ export class Game {
     this._winFetched = false;
     this.top5HS = null;
     this.top5Err = null;
+    this.usernameReady = false; // set by UI after username saved
 
     this.externalPause = false;
 
@@ -89,6 +90,8 @@ export class Game {
     }
     // Difficulty menu before start
     if (this.state === 'menu') {
+      // Block starting the game until username is provided
+      if (!this.usernameReady) return;
       if (this.input.wasPressed('Digit1') || this.input.wasPressed('KeyE')) {
         this.setDifficulty('easy');
         this.level = 1;

@@ -23,8 +23,10 @@ export function initUI(game) {
     hide(elements.usernameModal);
     // Ensure server knows this user; ignore errors silently
     (async () => { try { await apiRegister(currentUser); } catch {} })();
+    if (game) game.usernameReady = true;
   } else {
     show(elements.usernameModal);
+    if (game) game.usernameReady = false;
   }
 
   elements.usernameSave.addEventListener('click', async () => {
@@ -35,8 +37,16 @@ export function initUI(game) {
       saveUsername(name);
       elements.userDisplay.textContent = `@${currentUser}`;
       hide(elements.usernameModal);
+      if (game) game.usernameReady = true;
     } catch (e) {
       alert('Could not save username. Use 2–16 characters: letters, numbers, underscore.');
+    }
+  });
+
+  // Submit username on Enter key in input
+  elements.usernameInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      elements.usernameSave.click();
     }
   });
 
@@ -44,6 +54,16 @@ export function initUI(game) {
     await openLeaderboard('high_score');
   });
   elements.lbClose.addEventListener('click', () => hide(elements.lbModal));
+  // Click outside the card closes the leaderboard
+  elements.lbModal.addEventListener('click', (e) => {
+    if (e.target === elements.lbModal) hide(elements.lbModal);
+  });
+  // Esc closes leaderboard
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'Escape' && elements.lbModal && elements.lbModal.style.display !== 'none') {
+      hide(elements.lbModal);
+    }
+  });
   elements.lbTabs.addEventListener('click', async (e) => {
     const t = e.target.closest('[data-tab]');
     if (!t) return;
