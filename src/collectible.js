@@ -14,6 +14,7 @@ export class Donut {
     if (!this.dead && overlap(this.rect(), game.player.rect())) {
       game.player.pickupBoost(3.0);
       game.score += 1;
+      if (game.sfx && typeof game.sfx.pickup === 'function') game.sfx.pickup();
       this.dead = true;
     }
   }
@@ -31,4 +32,3 @@ export class Donut {
     ctx.fill();
   }
 }
-

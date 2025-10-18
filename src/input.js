@@ -4,7 +4,7 @@ export class Input {
     this.down = new Set();
     this.pressed = new Set();
     this._handled = new Set([
-      'ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Space','Enter','F'
+      'ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Space','Enter','KeyF','Escape'
     ]);
 
     this._onKeyDown = (e) => {
@@ -41,4 +41,3 @@ export class Input {
     this.target.removeEventListener('keyup', this._onKeyUp);
   }
 }
-

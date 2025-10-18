@@ -1,17 +1,28 @@
 import { Donut } from './collectible.js';
 import { Enemy } from './enemy.js';
+import { Platform } from './platform.js';
 
 export function createLevel(bounds) {
   const platforms = [];
 
-  // Ground
-  platforms.push({ x: 0, y: bounds.h - 30, w: bounds.w, h: 30, color: '#606060' });
+  // Ground (static)
+  platforms.push(new Platform(0, bounds.h - 30, bounds.w, 30, '#606060'));
 
-  // Staggered platforms (added a helper platform and tweaks for reachability)
-  platforms.push({ x: 60,  y: bounds.h - 90,  w: 100, h: 14, color: '#707070' }); // helper low step
-  platforms.push({ x: 180, y: bounds.h - 140, w: 140, h: 14, color: '#707070' });
-  platforms.push({ x: 360, y: bounds.h - 190, w: 140, h: 14, color: '#707070' });
-  platforms.push({ x: 560, y: bounds.h - 230, w: 160, h: 14, color: '#707070' });
+  // Staggered platforms: some static, some moving
+  // Helper low step (oscillates slightly in x)
+  platforms.push(new Platform(60, bounds.h - 90, 100, 14, '#707070', {
+    osc: { axis: 'x', amplitude: 20, speed: 1.2 }
+  }));
+  // Mid platform (static)
+  platforms.push(new Platform(180, bounds.h - 140, 140, 14, '#707070'));
+  // Mid-high platform (oscillates horizontally)
+  platforms.push(new Platform(360, bounds.h - 190, 140, 14, '#707070', {
+    osc: { axis: 'x', amplitude: 40, speed: 1.6 }
+  }));
+  // Top-right platform (oscillates vertically)
+  platforms.push(new Platform(560, bounds.h - 230, 160, 14, '#707070', {
+    osc: { axis: 'y', amplitude: 16, speed: 1.8 }
+  }));
 
   // Donuts
   const donuts = [

@@ -2,13 +2,14 @@ Unicorn Donut Dash – 2D Platformer MVP
 
 How to run
 - Open `index.html` directly in a modern desktop browser (Chrome/Edge/Firefox). No build step.
-- Controls: Left/Right arrows to move, Space to jump (double jump enabled).
-- Goal: Reach the unicorn on the far right. Avoid orange projectiles.
+- Controls: Left/Right arrows to move, Space to jump (double jump), F to shoot, Esc to pause/resume.
+- Goal: Reach the unicorn on the far right. Avoid enemies and orange projectiles.
 - Donuts: Pick up for a short speed boost and +1 score.
 - Restart: Press Enter after winning or losing.
 
 Tech
 - HTML5 Canvas + vanilla JavaScript (ES modules). Zero dependencies.
+- Web Audio API tones for shooting, hits, and winning.
 
 Structure
 - `index.html` – Canvas + script loader

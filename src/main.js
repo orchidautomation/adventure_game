@@ -24,4 +24,23 @@ window.addEventListener('keydown', (e) => {
   if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) {
     e.preventDefault();
   }
+  // Try to unlock audio context on any key press
+  try { game.sfx && game.sfx.unlock(); } catch {}
 }, { passive: false });
+
+window.addEventListener('pointerdown', () => {
+  try { game.sfx && game.sfx.unlock(); } catch {}
+});
+
+// Responsive canvas scaling to fill most of the viewport while preserving aspect ratio
+const BASE_W = canvas.width;
+const BASE_H = canvas.height;
+function resizeCanvas() {
+  const scale = Math.min(window.innerWidth / BASE_W, window.innerHeight / BASE_H) * 0.95;
+  const cssW = Math.max(1, Math.floor(BASE_W * scale));
+  const cssH = Math.max(1, Math.floor(BASE_H * scale));
+  canvas.style.width = cssW + 'px';
+  canvas.style.height = cssH + 'px';
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();

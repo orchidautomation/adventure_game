@@ -18,8 +18,12 @@ export class Projectile {
     // Hit player
     if (!this.dead && game.state === 'running' && overlap(this.rect(), game.player.rect())) {
       const took = game.player.hurt();
+      if (took && game.sfx) game.sfx.hit();
       if (took && game.player.hearts <= 0) {
-        game.state = 'lost';
+        if (game.state !== 'lost') {
+          game.state = 'lost';
+          if (game.sfx) game.sfx.lose();
+        }
       }
       this.dead = true;
     }
@@ -39,4 +43,3 @@ export class Projectile {
     ctx.fill();
   }
 }
-

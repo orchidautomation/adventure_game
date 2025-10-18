@@ -24,10 +24,13 @@ export function drawHUD(ctx, game) {
     ctx.fillRect(0, 0, game.bounds.w, game.bounds.h);
     ctx.fillStyle = '#fff';
     ctx.font = 'bold 28px system-ui, sans-serif';
-    const title = game.state === 'won' ? 'You Win! 🦄' : 'Game Over';
+    let title = 'Game Over';
+    if (game.state === 'won') title = 'You Win! 🦄';
+    else if (game.state === 'paused') title = 'Paused';
     centerText(ctx, title, game.bounds.w / 2, game.bounds.h / 2 - 10);
     ctx.font = '16px system-ui, sans-serif';
-    centerText(ctx, 'Press Enter to restart', game.bounds.w / 2, game.bounds.h / 2 + 20);
+    const sub = game.state === 'paused' ? 'Press Esc to resume' : 'Press Enter to restart';
+    centerText(ctx, sub, game.bounds.w / 2, game.bounds.h / 2 + 20);
   }
 }
 
@@ -47,4 +50,3 @@ function drawHeart(ctx, x, y, size) {
   ctx.closePath();
   ctx.fill();
 }
-

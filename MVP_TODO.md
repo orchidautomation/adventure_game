@@ -15,6 +15,6 @@
 - [x] README: quick run/play instructions
 
 Stretch (if time)
-- [ ] Shooting for player (`F` key)
+- [x] Shooting for player (`F` key)
 - [ ] Coyote time / jump buffer
 - [ ] Simple sounds (pickup/hit/win)

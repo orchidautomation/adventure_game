@@ -9,6 +9,7 @@ export class Enemy {
     this.color = opts.color ?? '#ff5252';
     this.fireVX = opts.vx ?? -250; // projectile x-velocity
     this.fireVY = opts.vy ?? 0;    // projectile y-velocity
+    this.dead = false;
   }
 
   rect() { return { x: this.pos.x, y: this.pos.y, w: this.size.w, h: this.size.h }; }
@@ -24,6 +25,7 @@ export class Enemy {
   }
 
   draw(ctx) {
+    if (this.dead) return;
     ctx.fillStyle = this.color;
     const { x, y, w, h } = this.rect();
     ctx.fillRect(x, y, w, h);
