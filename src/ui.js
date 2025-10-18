@@ -2,8 +2,11 @@ import { getSavedUsername, saveUsername, apiRegister, apiSubmitRun, apiLeaderboa
 
 let elements = {};
 let currentUser = '';
+let gameRef = null;
+let modalLocks = 0;
 
 export function initUI(game) {
+  gameRef = game || null;
   elements.usernameModal = document.getElementById('username-modal');
   elements.usernameInput = document.getElementById('username-input');
   elements.usernameSave = document.getElementById('username-save');
@@ -72,13 +75,13 @@ export function initUI(game) {
 
 async function openLeaderboard(by) {
   setActiveTab(by);
+  elements.lbBody.innerHTML = '<div class="lb-row">Loading...</div>';
+  show(elements.lbModal);
   try {
     const { results } = await apiLeaderboard(by, 10);
     renderLeaderboard(results);
-    show(elements.lbModal);
   } catch {
     elements.lbBody.innerHTML = '<div class="lb-row">Failed to load leaderboard</div>';
-    show(elements.lbModal);
   }
 }
 
@@ -101,6 +104,41 @@ function setActiveTab(by) {
   }
 }
 
-function hide(el) { if (el) el.style.display = 'none'; }
-function show(el) { if (el) el.style.display = 'flex'; }
+function hide(el) {
+  if (!el) return;
+  markModalState(el, false);
+  el.style.display = 'none';
+}
+function show(el) {
+  if (!el) return;
+  markModalState(el, true);
+  el.style.display = 'flex';
+}
+
+function markModalState(el, show) {
+  if (!el.classList || !el.classList.contains('modal')) return;
+  const prev = el.dataset.modalShown === 'true';
+  if (show && !prev) {
+    el.dataset.modalShown = 'true';
+    lockGame();
+  } else if (!show && prev) {
+    el.dataset.modalShown = 'false';
+    unlockGame();
+  }
+}
+
+function lockGame() {
+  modalLocks += 1;
+  if (gameRef && modalLocks === 1) {
+    gameRef.setExternalPause(true);
+  }
+}
+
+function unlockGame() {
+  if (modalLocks === 0) return;
+  modalLocks -= 1;
+  if (gameRef && modalLocks === 0) {
+    gameRef.setExternalPause(false);
+  }
+}
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])); }
