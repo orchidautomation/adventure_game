@@ -1,3 +1,4 @@
+<!-- moved to docs/ for OSS repo hygiene -->
 # Leaderboard MVP – Design and Implementation Plan
 
 ## Goal
@@ -144,4 +145,3 @@ Scoring semantics (MVP)
 
 ---
 If you approve this plan, I’ll scaffold the API functions, add `package.json`, the SQL schema file, and the username/leaderboard UI, then wire the game to submit on Game Over.
-

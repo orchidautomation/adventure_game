@@ -25,3 +25,6 @@ Structure
 - `src/collectible.js` – donuts
 - `src/level.js` – layout and entity placement
 - `src/hud.js` – hearts/score and overlays
+ - `api/` – serverless functions (register, submit-run, leaderboard)
+ - `db/` – SQL schema
+ - `docs/` – planning docs (raw idea, refined plan, TODO, leaderboard plan)

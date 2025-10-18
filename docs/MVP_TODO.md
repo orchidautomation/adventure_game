@@ -1,3 +1,4 @@
+<!-- moved to docs/ for OSS repo hygiene -->
 # MVP TODO – 2D Platformer (Canvas + JS)
 
 - [x] Scaffold project: `index.html`, `src/` modules

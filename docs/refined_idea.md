@@ -1,3 +1,4 @@
+<!-- moved to docs/ for OSS repo hygiene -->
 # 2D Platformer MVP – Refined Idea and 30‑Minute Build Plan
 
 ## Vision
