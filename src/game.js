@@ -38,6 +38,8 @@ export class Game {
     this.top5HS = null;
     this.top5Err = null;
 
+    this.externalPause = false;
+
     this.reset();
     // Start on difficulty selection menu
     this.state = 'menu';
@@ -79,6 +81,9 @@ export class Game {
 
   update(dt) {
     this.time += dt;
+    if (this.externalPause) {
+      return;
+    }
     if (this.damageBoostTimer && this.damageBoostTimer > 0) {
       this.damageBoostTimer = Math.max(0, this.damageBoostTimer - dt);
     }
@@ -234,6 +239,10 @@ export class Game {
 
     // HUD & overlays
     drawHUD(ctx, this);
+  }
+
+  setExternalPause(active) {
+    this.externalPause = !!active;
   }
 }
 
