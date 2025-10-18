@@ -12,6 +12,7 @@ export function drawHUD(ctx, game) {
   ctx.fillStyle = '#ddd';
   ctx.font = '14px system-ui, sans-serif';
   ctx.fillText(`Donuts: ${game.score}`, 10, 42);
+  ctx.fillText(`Enemies: ${game.enemies.length}`, 10, 60);
 
   // Difficulty label (top-right)
   const label = game.difficulty === 'hard' ? 'Hard' : 'Easy';

@@ -172,10 +172,12 @@ export class Game {
       }
     }
 
-    // Win condition: touch unicorn
+    // Win condition: touch unicorn AND all enemies defeated
     if (overlap(this.player.rect(), this.unicorn)) {
-      this.state = 'won';
-      this.sfx.win();
+      if (this.enemies.length === 0) {
+        this.state = 'won';
+        this.sfx.win();
+      }
     }
   }
 
@@ -204,6 +206,7 @@ export class Game {
 
     // Unicorn (simple body + tail)
     drawUnicorn(ctx, this.unicorn);
+    if (this.enemies.length > 0) drawLock(ctx, this.unicorn);
 
     // Player
     this.player.draw(ctx);
@@ -254,4 +257,17 @@ function drawUnicorn(ctx, u) {
     ctx.fillStyle = colors[i];
     ctx.fillRect(u.x - (i+1)*4, u.y + 4 + i%2, 4, u.h - 8);
   }
+}
+
+function drawLock(ctx, u) {
+  // Draw a small lock icon to indicate locked goal
+  const x = u.x + u.w - 16;
+  const y = u.y - 18;
+  ctx.fillStyle = 'rgba(255,80,80,0.85)';
+  ctx.fillRect(x, y + 6, 12, 10);
+  ctx.beginPath();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = 'rgba(255,80,80,0.95)';
+  ctx.arc(x + 6, y + 6, 4, Math.PI, 0);
+  ctx.stroke();
 }

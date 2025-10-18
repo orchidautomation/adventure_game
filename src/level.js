@@ -115,5 +115,36 @@ export function createLevel(bounds, opts = {}) {
     enemies.push(new Enemy(bx, by, { vx: bossVX, interval: 1.0, jitter: 0.35, boss: true, hp: bossHP, color: '#b855ff' }));
   }
 
+  // Extra enemies scale with level: add more on mid platforms
+  const midStart = 1, midEnd = Math.max(1, steps - 2);
+  const candidates = [];
+  for (let i = midStart; i <= midEnd; i++) candidates.push(i);
+  // Shuffle
+  for (let i = candidates.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+  }
+  const extraTarget = diff === 'hard' ? Math.min(Math.floor((level + 1) / 2), candidates.length) : Math.min(Math.floor(level / 2), candidates.length);
+  for (let n = 0; n < extraTarget; n++) {
+    const idx = candidates[n];
+    const plat = platforms[idx + 1]; // skip ground at 0
+    if (!plat) continue;
+    // Place extra enemy near an edge to avoid center overlap
+    const placeLeft = (idx % 2) === 0;
+    const ex = clamp((placeLeft ? plat.x + 6 : plat.x + plat.w - 36), 0, W - 30);
+    const ey = plat.y - 30;
+    let speedMag, interval;
+    if (diff === 'hard') {
+      const baseMin = 320 + Math.min(200, 20 * (level - 1));
+      const baseMax = 440 + Math.min(220, 30 * (level - 1));
+      speedMag = randi(baseMin, baseMax);
+      interval = rand(Math.max(0.5, 0.9 - 0.05 * (level - 1)), Math.max(0.65, 1.1 - 0.07 * (level - 1)));
+    } else {
+      speedMag = 240 + Math.min(160, 18 * (level - 1));
+      interval = 1.2;
+    }
+    enemies.push(new Enemy(ex, ey, { vx: speedMag, interval, color: '#ff5e5e', jitter: diff === 'hard' ? 0.5 : 0.3 }));
+  }
+
   return { platforms, donuts, enemies, unicorn };
 }
