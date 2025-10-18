@@ -11,9 +11,12 @@ export class Game {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.bounds = { w: canvas.width, h: canvas.height };
-    this.state = 'running'; // 'won' | 'lost' | 'paused'
+    this.state = 'running'; // 'won' | 'lost' | 'paused' | 'menu'
     this.score = 0;
     this.time = 0;
+    this.difficulty = 'easy'; // 'easy' | 'hard'
+    this.level = 1;
+    this.damagePerHit = 1;
 
     this.platforms = [];
     this.donuts = [];
@@ -25,12 +28,14 @@ export class Game {
     this.sfx = new Sfx();
 
     this.reset();
+    // Start on difficulty selection menu
+    this.state = 'menu';
   }
 
   reset() {
     this.state = 'running';
     this.score = 0;
-    const lvl = createLevel(this.bounds);
+    const lvl = createLevel(this.bounds, { difficulty: this.difficulty, level: this.level });
     this.platforms = lvl.platforms;
     this.donuts = lvl.donuts;
     this.enemies = lvl.enemies ?? (lvl.enemy ? [lvl.enemy] : []);
@@ -38,6 +43,14 @@ export class Game {
     this.playerBullets = [];
     this.unicorn = lvl.unicorn;
     this.player = new Player(20, this.bounds.h - 80);
+    // Apply difficulty hearts
+    const hearts = this.difficulty === 'hard' ? 3 : 5;
+    this.player.maxHearts = hearts;
+    this.player.hearts = hearts;
+    // Apply difficulty invulnerability window
+    this.player.invulnDuration = this.difficulty === 'hard' ? 0.55 : 1.0;
+    // Compute damage per hit scaling with level
+    this.recomputeDamage();
   }
 
   spawnProjectile(x, y, vx, vy) {
@@ -50,13 +63,48 @@ export class Game {
 
   update(dt) {
     this.time += dt;
+    // Difficulty menu before start
+    if (this.state === 'menu') {
+      if (this.input.wasPressed('Digit1') || this.input.wasPressed('KeyE')) {
+        this.setDifficulty('easy');
+        this.reset();
+        return;
+      }
+      if (this.input.wasPressed('Digit2') || this.input.wasPressed('KeyH')) {
+        this.setDifficulty('hard');
+        this.reset();
+        return;
+      }
+      return; // wait for selection
+    }
+
+    // Global reroll: R resets
+    if (this.input.wasPressed('KeyR')) {
+      this.reset();
+      return;
+    }
+    // Difficulty toggle (live) — 1/E for Easy, 2/H for Hard
+    if (this.input.wasPressed('Digit1') || this.input.wasPressed('KeyE')) {
+      this.setDifficulty('easy');
+    }
+    if (this.input.wasPressed('Digit2') || this.input.wasPressed('KeyH')) {
+      this.setDifficulty('hard');
+    }
     // Pause/resume handling
     if (this.state === 'paused') {
       if (this.input.wasPressed('Escape')) this.state = 'running';
       return;
     }
     if (this.state !== 'running') {
-      if (this.input.wasPressed('Enter')) this.reset();
+      if (this.input.wasPressed('Enter')) {
+        if (this.state === 'won') {
+          this.level += 1;
+          this.reset();
+        } else if (this.state === 'lost') {
+          this.level = 1;
+          this.reset();
+        }
+      }
       return;
     }
 
@@ -101,9 +149,14 @@ export class Game {
     this.donuts = this.donuts.filter(d => !d.dead);
 
     // Update player (movement + collisions)
-    this.player.update(dt, this.input, this.platforms, this.bounds, {
-      onJump: () => this.sfx.jump()
-    });
+    this.player.update(
+      dt,
+      this.input,
+      this.platforms,
+      this.bounds,
+      { onJump: () => this.sfx.jump() },
+      this.enemies.map(e => e.rect())
+    );
 
     // Contact damage with enemies
     for (const e of this.enemies) {
@@ -159,6 +212,29 @@ export class Game {
     drawHUD(ctx, this);
   }
 }
+
+Game.prototype.recomputeDamage = function() {
+  const base = 1;
+  const factor = this.difficulty === 'hard' ? 1.22 : 1.12;
+  const cap = this.difficulty === 'hard' ? 3 : 2;
+  const scaled = Math.ceil(base * Math.pow(factor, Math.max(0, this.level - 1)));
+  this.damagePerHit = Math.min(cap, Math.max(1, scaled));
+};
+
+Game.prototype.setDifficulty = function(mode) {
+  if (mode !== 'easy' && mode !== 'hard') return;
+  if (this.difficulty === mode) return;
+  this.difficulty = mode;
+  const hearts = this.difficulty === 'hard' ? 3 : 5;
+  if (this.player) {
+    this.player.maxHearts = hearts;
+    this.player.hearts = Math.min(hearts, this.player.hearts);
+    // Optionally refill fully on change
+    this.player.hearts = hearts;
+    this.player.invulnDuration = this.difficulty === 'hard' ? 0.55 : 1.0;
+  }
+  this.recomputeDamage();
+};
 
 function drawUnicorn(ctx, u) {
   // Body

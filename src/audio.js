@@ -2,6 +2,8 @@ export class Sfx {
   constructor() {
     this.ctx = null;
     this.enabled = true;
+    this.lastEnemyShootAt = 0;
+    this.lastPlayerShootAt = 0;
   }
 
   ensure() {
@@ -40,7 +42,37 @@ export class Sfx {
   }
 
   shoot() {
+    const ctx = this.ensure();
+    if (!ctx) return;
+    this.lastPlayerShootAt = ctx.currentTime;
     this.playTone({ type: 'square', freq: 900, sweepTo: 700, duration: 0.08, volume: 0.15 });
+  }
+
+  enemyShoot() {
+    const ctx = this.ensure();
+    if (!ctx) return;
+    let start = ctx.currentTime;
+    // Avoid overlapping exactly with player shoot or other enemy shots
+    if (this.lastPlayerShootAt && start - this.lastPlayerShootAt < 0.06) {
+      start = this.lastPlayerShootAt + 0.07;
+    }
+    if (this.lastEnemyShootAt && start - this.lastEnemyShootAt < 0.05) {
+      start = this.lastEnemyShootAt + 0.05;
+    }
+    this.lastEnemyShootAt = start;
+    // Schedule low-pitched pew distinct from player shoot
+    const duration = 0.07;
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = 'square';
+    o.frequency.setValueAtTime(520, start);
+    o.frequency.exponentialRampToValueAtTime(420, start + duration * 0.9);
+    g.gain.setValueAtTime(0.0001, start);
+    g.gain.linearRampToValueAtTime(0.13, start + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    o.connect(g).connect(ctx.destination);
+    o.start(start);
+    o.stop(start + duration + 0.05);
   }
 
   hit() {

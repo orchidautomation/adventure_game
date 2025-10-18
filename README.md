@@ -2,7 +2,7 @@ Unicorn Donut Dash – 2D Platformer MVP
 
 How to run
 - Open `index.html` directly in a modern desktop browser (Chrome/Edge/Firefox). No build step.
-- Controls: Left/Right arrows to move, Space to jump (double jump), F to shoot, Esc to pause/resume.
+- Controls: On start, choose difficulty: 1/E = Easy (5 hearts), 2/H = Hard (3 hearts). In game: Left/Right arrows to move, Space to jump (double jump), F to shoot, Esc to pause/resume, R to reroll level.
 - Goal: Reach the unicorn on the far right. Avoid enemies and orange projectiles.
 - Donuts: Pick up for a short speed boost and +1 score.
 - Restart: Press Enter after winning or losing.

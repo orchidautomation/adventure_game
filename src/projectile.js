@@ -17,7 +17,7 @@ export class Projectile {
 
     // Hit player
     if (!this.dead && game.state === 'running' && overlap(this.rect(), game.player.rect())) {
-      const took = game.player.hurt();
+      const took = game.player.hurt(game.damagePerHit || 1);
       if (took && game.sfx) game.sfx.hit();
       if (took && game.player.hearts <= 0) {
         if (game.state !== 'lost') {

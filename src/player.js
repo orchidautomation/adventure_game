@@ -16,6 +16,7 @@ export class Player {
     this.maxHearts = 5;
     this.hearts = 5;
     this.invuln = 0; // seconds
+    this.invulnDuration = 1.0; // configurable via difficulty
     this.boost = 0; // seconds
 
     this.color = '#4ea3ff';
@@ -26,10 +27,10 @@ export class Player {
     return { x: this.pos.x, y: this.pos.y, w: this.size.w, h: this.size.h };
   }
 
-  hurt() {
+  hurt(amount = 1) {
     if (this.invuln > 0) return false;
-    this.hearts = Math.max(0, this.hearts - 1);
-    this.invuln = 1.0; // 1s iframe
+    this.hearts = Math.max(0, this.hearts - Math.max(1, Math.floor(amount)));
+    this.invuln = this.invulnDuration; // iframe duration
     return true;
   }
 
@@ -37,7 +38,7 @@ export class Player {
     this.boost = Math.max(this.boost, duration);
   }
 
-  update(dt, input, platforms, bounds, hooks) {
+  update(dt, input, platforms, bounds, hooks, blockers = []) {
     const moveLeft = input.isDown('ArrowLeft');
     const moveRight = input.isDown('ArrowRight');
     let move = 0;
@@ -67,7 +68,8 @@ export class Player {
 
     // Horizontal move + collisions
     this.pos.x += this.vel.x * dt;
-    for (const p of platforms) {
+    const hsolids = blockers && blockers.length ? platforms.concat(blockers) : platforms;
+    for (const p of hsolids) {
       if (overlap(this.rect(), p)) {
         if (this.vel.x > 0) {
           this.pos.x = p.x - this.size.w; // from left

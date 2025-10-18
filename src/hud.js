@@ -13,6 +13,19 @@ export function drawHUD(ctx, game) {
   ctx.font = '14px system-ui, sans-serif';
   ctx.fillText(`Donuts: ${game.score}`, 10, 42);
 
+  // Difficulty label (top-right)
+  const label = game.difficulty === 'hard' ? 'Hard' : 'Easy';
+  ctx.fillStyle = game.difficulty === 'hard' ? '#ff7878' : '#aaf0ff';
+  const text = `Mode: ${label}`;
+  const m = ctx.measureText(text);
+  ctx.fillText(text, game.bounds.w - m.width - 10, 24);
+
+  // Level and damage (top-center)
+  const info = `Level ${game.level}  Dmg ${game.damagePerHit}hp`;
+  ctx.fillStyle = '#ddd';
+  const m2 = ctx.measureText(info);
+  ctx.fillText(info, (game.bounds.w - m2.width) / 2, 24);
+
   // Player status
   if (game.player.boost > 0) {
     ctx.fillStyle = '#aaf0ff';
@@ -25,11 +38,14 @@ export function drawHUD(ctx, game) {
     ctx.fillStyle = '#fff';
     ctx.font = 'bold 28px system-ui, sans-serif';
     let title = 'Game Over';
-    if (game.state === 'won') title = 'You Win! 🦄';
+    if (game.state === 'won') title = `Level ${game.level} Complete!`;
     else if (game.state === 'paused') title = 'Paused';
+    else if (game.state === 'menu') title = 'Select Difficulty';
     centerText(ctx, title, game.bounds.w / 2, game.bounds.h / 2 - 10);
     ctx.font = '16px system-ui, sans-serif';
-    const sub = game.state === 'paused' ? 'Press Esc to resume' : 'Press Enter to restart';
+    let sub = 'Press Enter to restart';
+    if (game.state === 'paused') sub = 'Press Esc to resume';
+    else if (game.state === 'menu') sub = '1/E = Easy (5 hearts), 2/H = Hard (3 hearts)';
     centerText(ctx, sub, game.bounds.w / 2, game.bounds.h / 2 + 20);
   }
 }

@@ -16,7 +16,12 @@ export class PlayerBullet {
     // Hit enemies
     for (const e of game.enemies) {
       if (!e.dead && overlap(this.rect(), e.rect())) {
-        e.dead = true;
+        if (typeof e.hp === 'number') {
+          e.hp -= 1;
+          if (e.hp <= 0) e.dead = true;
+        } else {
+          e.dead = true;
+        }
         this.dead = true;
         break;
       }
@@ -32,4 +37,3 @@ export class PlayerBullet {
     ctx.fillRect(x, y, w, h);
   }
 }
-
