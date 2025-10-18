@@ -27,17 +27,32 @@ export default async function handler(req) {
      VALUES ($1, $2, $3, $4, $5)`,
     [userId, score, levelReached, difficulty, died]
   );
-  const out = await sql(
-    `UPDATE users
-       SET total_score = total_score + $2,
-           high_score = GREATEST(high_score, $2),
-           highest_level = GREATEST(highest_level, $3),
-           runs = runs + 1,
-           updated_at = NOW(),
-           last_run_at = NOW()
-     WHERE id = $1
-     RETURNING id, username, total_score, high_score, highest_level, runs, last_run_at`,
-    [userId, score, levelReached]
-  );
-  return ok({ user: out[0] });
+
+  if (died) {
+    const out = await sql(
+      `UPDATE users
+         SET total_score = total_score + $2,
+             high_score = GREATEST(high_score, $2),
+             highest_level = GREATEST(highest_level, $3),
+             runs = runs + 1,
+             updated_at = NOW(),
+             last_run_at = NOW()
+       WHERE id = $1
+       RETURNING id, username, total_score, high_score, highest_level, runs, last_run_at`,
+      [userId, score, levelReached]
+    );
+    return ok({ user: out[0] });
+  } else {
+    const out = await sql(
+      `UPDATE users
+         SET high_score = GREATEST(high_score, $2),
+             highest_level = GREATEST(highest_level, $3),
+             updated_at = NOW(),
+             last_run_at = NOW()
+       WHERE id = $1
+       RETURNING id, username, total_score, high_score, highest_level, runs, last_run_at`,
+      [userId, score, levelReached]
+    );
+    return ok({ user: out[0] });
+  }
 }

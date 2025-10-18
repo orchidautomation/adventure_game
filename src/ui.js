@@ -88,6 +88,15 @@ export function initUI(game) {
       await fetchTop5();
     };
     game.onWinEnd = async () => {
+      // Snapshot progress at each level win (died=false)
+      try {
+        if (currentUser) {
+          const score = (game.totalScore || 0) + (game.levelScore || 0);
+          const levelReached = game.level;
+          const difficulty = game.difficulty;
+          await apiSubmitRun({ username: currentUser, score, levelReached, difficulty, died: false });
+        }
+      } catch {}
       await fetchTop5();
     };
   }
