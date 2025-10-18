@@ -9,7 +9,13 @@ export function getClient() {
 }
 
 export function ok(body, status = 200) {
-  return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-store'
+    }
+  });
 }
 
 export function bad(message, status = 400) {
@@ -31,4 +37,3 @@ export async function readJson(req) {
     return null;
   }
 }
-
