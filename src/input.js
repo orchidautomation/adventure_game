@@ -7,7 +7,14 @@ export class Input {
       'ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Space','Enter','KeyF','Escape','KeyR','Digit1','Digit2','KeyE','KeyH'
     ]);
 
+    const isEditable = (el) => {
+      if (!el) return false;
+      const tag = (el.tagName || '').toUpperCase();
+      return tag === 'INPUT' || tag === 'TEXTAREA' || el.isContentEditable;
+    };
+
     this._onKeyDown = (e) => {
+      if (isEditable(e.target)) return; // don't intercept typing in inputs
       if (this._handled.has(e.code)) e.preventDefault();
       if (!this.down.has(e.code)) {
         this.pressed.add(e.code);
@@ -15,6 +22,7 @@ export class Input {
       this.down.add(e.code);
     };
     this._onKeyUp = (e) => {
+      if (isEditable(e.target)) return; // don't intercept typing in inputs
       if (this._handled.has(e.code)) e.preventDefault();
       this.down.delete(e.code);
     };

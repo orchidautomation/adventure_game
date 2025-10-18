@@ -23,7 +23,10 @@ requestAnimationFrame(frame);
 
 // Prevent page scrolling on spacebar when canvas focused in some browsers
 window.addEventListener('keydown', (e) => {
-  if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) {
+  const target = e.target;
+  const tag = (target && target.tagName || '').toUpperCase();
+  const isEditable = tag === 'INPUT' || tag === 'TEXTAREA' || (target && target.isContentEditable);
+  if (!isEditable && ['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) {
     e.preventDefault();
   }
   // Try to unlock audio context on any key press
