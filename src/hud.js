@@ -61,6 +61,27 @@ export function drawHUD(ctx, game) {
       centerText(ctx, `Final Score: ${final}`, game.bounds.w / 2, game.bounds.h / 2 + 16);
       centerText(ctx, 'Press Enter to restart', game.bounds.w / 2, game.bounds.h / 2 + 36);
     }
+
+    // Top 5 High Scores after game over or win
+    if (game.state === 'lost' || game.state === 'won') {
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 16px system-ui, sans-serif';
+      const header = 'Top 5 (High Scores)';
+      centerText(ctx, header, game.bounds.w / 2, game.bounds.h / 2 + 70);
+      ctx.font = '14px system-ui, sans-serif';
+      const list = game.top5HS || [];
+      if (game.top5Err) {
+        centerText(ctx, game.top5Err, game.bounds.w / 2, game.bounds.h / 2 + 90);
+      } else if (list.length === 0) {
+        centerText(ctx, 'No scores yet', game.bounds.w / 2, game.bounds.h / 2 + 90);
+      } else {
+        for (let i = 0; i < Math.min(5, list.length); i++) {
+          const r = list[i];
+          const line = `${i + 1}. @${r.username}  HS ${r.high_score}  Total ${r.total_score}`;
+          centerText(ctx, line, game.bounds.w / 2, game.bounds.h / 2 + 90 + i * 18);
+        }
+      }
+    }
   }
 }
 

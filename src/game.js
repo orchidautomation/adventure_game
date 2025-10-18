@@ -33,6 +33,8 @@ export class Game {
     this.sfx = new Sfx();
     this.onRunEnd = null; // set by UI
     this._reported = false;
+    this.top5HS = null;
+    this.top5Err = null;
 
     this.reset();
     // Start on difficulty selection menu
@@ -59,6 +61,9 @@ export class Game {
     // Compute damage per hit scaling with level
     this.recomputeDamage();
     this.damageBoostTimer = 0;
+    this._reported = false;
+    this.top5HS = null;
+    this.top5Err = null;
   }
 
   spawnProjectile(x, y, vx, vy) {

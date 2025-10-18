@@ -50,6 +50,14 @@ export function initUI(game) {
     game.onRunEnd = async (summary) => {
       if (!currentUser) return; // cannot submit without user
       try { await apiSubmitRun({ username: currentUser, ...summary }); } catch {}
+      try {
+        const { results } = await apiLeaderboard('high_score', 5);
+        game.top5HS = results;
+        game.top5Err = null;
+      } catch (e) {
+        game.top5HS = null;
+        game.top5Err = 'Failed to fetch leaderboard';
+      }
     };
   }
 }
