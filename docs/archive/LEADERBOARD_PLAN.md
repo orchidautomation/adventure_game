@@ -1,4 +1,4 @@
-<!-- moved to docs/ for OSS repo hygiene -->
+<!-- archived after completion; original plan retained for reference -->
 # Leaderboard MVP – Design and Implementation Plan
 
 ## Goal
