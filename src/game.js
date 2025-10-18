@@ -32,7 +32,9 @@ export class Game {
     this.unicorn = null;
     this.sfx = new Sfx();
     this.onRunEnd = null; // set by UI
+    this.onWinEnd = null; // set by UI
     this._reported = false;
+    this._winFetched = false;
     this.top5HS = null;
     this.top5Err = null;
 
@@ -62,6 +64,7 @@ export class Game {
     this.recomputeDamage();
     this.damageBoostTimer = 0;
     this._reported = false;
+    this._winFetched = false;
     this.top5HS = null;
     this.top5Err = null;
   }
@@ -194,8 +197,7 @@ export class Game {
     // Win condition: touch unicorn AND all enemies defeated
     if (overlap(this.player.rect(), this.unicorn)) {
       if (this.enemies.length === 0) {
-        this.state = 'won';
-        this.sfx.win();
+        this.win();
       }
     }
   }
@@ -262,6 +264,17 @@ Game.prototype.lose = function() {
 
 Game.prototype.getBulletDamage = function() {
   return (this.damageBoostTimer && this.damageBoostTimer > 0) ? 2 : 1;
+};
+
+Game.prototype.win = function() {
+  if (this.state !== 'won') {
+    this.state = 'won';
+    this.sfx.win();
+    if (!this._winFetched && this.onWinEnd) {
+      this._winFetched = true;
+      try { this.onWinEnd(); } catch {}
+    }
+  }
 };
 
 Game.prototype.setDifficulty = function(mode) {

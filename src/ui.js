@@ -49,9 +49,7 @@ export function initUI(game) {
 
   // Wire Game end callback
   if (game) {
-    game.onRunEnd = async (summary) => {
-      if (!currentUser) return; // cannot submit without user
-      try { await apiSubmitRun({ username: currentUser, ...summary }); } catch {}
+    async function fetchTop5() {
       try {
         const { results } = await apiLeaderboard('high_score', 5);
         game.top5HS = results;
@@ -60,6 +58,14 @@ export function initUI(game) {
         game.top5HS = null;
         game.top5Err = 'Failed to fetch leaderboard';
       }
+    }
+    game.onRunEnd = async (summary) => {
+      if (!currentUser) return; // cannot submit without user
+      try { await apiSubmitRun({ username: currentUser, ...summary }); } catch {}
+      await fetchTop5();
+    };
+    game.onWinEnd = async () => {
+      await fetchTop5();
     };
   }
 }
