@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Unicorn Donut Dash – MVP</title>
+    <style>
+      html, body { height: 100%; margin: 0; background: #121212; color: #eee; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+      .wrap { height: 100%; display: grid; place-items: center; }
+      canvas { background: #1e1e1e; border: 1px solid #333; image-rendering: pixelated; }
+      .hint { position: fixed; bottom: 10px; width: 100%; text-align: center; color: #aaa; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <canvas id="game" width="800" height="450"></canvas>
+    </div>
+    <div class="hint">Arrows to move, Space to jump (double jump enabled). Reach the unicorn. Avoid orange projectiles. Enter to restart.</div>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+  </html>
