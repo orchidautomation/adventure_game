@@ -31,6 +31,8 @@ export class Game {
     this.player = null;
     this.unicorn = null;
     this.sfx = new Sfx();
+    this.onRunEnd = null; // set by UI
+    this._reported = false;
 
     this.reset();
     // Start on difficulty selection menu
@@ -179,10 +181,7 @@ export class Game {
         const took = this.player.hurt();
         if (took) this.sfx.hit();
         if (took && this.player.hearts <= 0) {
-          if (this.state !== 'lost') {
-            this.state = 'lost';
-            this.sfx.lose();
-          }
+          this.lose();
         }
       }
     }
@@ -237,6 +236,23 @@ Game.prototype.recomputeDamage = function() {
   const cap = this.difficulty === 'hard' ? 3 : 2;
   const scaled = Math.ceil(base * Math.pow(factor, Math.max(0, this.level - 1)));
   this.damagePerHit = Math.min(cap, Math.max(1, scaled));
+};
+
+Game.prototype.lose = function() {
+  if (this.state !== 'lost') {
+    this.state = 'lost';
+    this.sfx.lose();
+    if (!this._reported && this.onRunEnd) {
+      this._reported = true;
+      const summary = {
+        score: (this.totalScore || 0) + (this.levelScore || 0),
+        levelReached: this.level,
+        difficulty: this.difficulty,
+        died: true
+      };
+      try { this.onRunEnd(summary); } catch {}
+    }
+  }
 };
 
 Game.prototype.getBulletDamage = function() {

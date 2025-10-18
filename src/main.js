@@ -1,11 +1,13 @@
 import { Input } from './input.js';
 import { Game } from './game.js';
+import { initUI } from './ui.js';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
 const input = new Input(window);
 const game = new Game(input, canvas);
+initUI(game);
 
 let last = performance.now();
 function frame(now) {

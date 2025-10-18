@@ -1,0 +1,15 @@
+{
+  "name": "unicorn-donut-dash",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'static'",
+    "vercel-build": "echo 'static'"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.9.3"
+  }
+}
+

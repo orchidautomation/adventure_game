@@ -9,13 +9,58 @@
       .wrap { height: 100%; display: grid; place-items: center; }
       canvas { background: #1e1e1e; border: 1px solid #333; image-rendering: pixelated; }
       .hint { position: fixed; bottom: 10px; width: 100%; text-align: center; color: #aaa; font-size: 12px; }
+      /* UI overlays */
+      #topbar { position: fixed; top: 8px; left: 8px; right: 8px; display: flex; justify-content: space-between; align-items: center; pointer-events: auto; }
+      #user-display { color: #aaa; font-size: 12px; }
+      #btn-leaderboard { background: #2b2b2b; color: #ddd; border: 1px solid #444; border-radius: 4px; padding: 6px 10px; cursor: pointer; }
+      .modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); }
+      .modal .card { background: #1f1f1f; border: 1px solid #333; padding: 16px; border-radius: 8px; min-width: 280px; color: #eee; }
+      .row { margin-bottom: 8px; }
+      input[type=text] { width: 100%; padding: 8px; background: #111; border: 1px solid #444; color: #eee; border-radius: 4px; }
+      button.primary { background: #3a7bfd; border: none; color: white; padding: 8px 12px; border-radius: 4px; cursor: pointer; }
+      /* Leaderboard */
+      #leaderboard-modal .card { width: 520px; }
+      #leaderboard-tabs { display: flex; gap: 8px; margin-bottom: 8px; }
+      #leaderboard-tabs .tab { padding: 6px 8px; border: 1px solid #444; border-radius: 4px; cursor: pointer; color: #ccc; }
+      #leaderboard-tabs .active { background: #333; color: #fff; border-color: #555; }
+      .lb-row { display: grid; grid-template-columns: 36px 1fr 100px 110px 70px 60px; gap: 6px; padding: 4px 0; border-bottom: 1px solid #2a2a2a; font-size: 13px; color: #ddd; }
+      .lb-row div { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     </style>
   </head>
   <body>
     <div class="wrap">
       <canvas id="game" width="800" height="450"></canvas>
     </div>
+    <div id="topbar">
+      <div id="user-display"></div>
+      <button id="btn-leaderboard">Leaderboard</button>
+    </div>
     <div class="hint">Arrows to move, Space to jump (double jump). F to shoot. Esc to pause/resume. R to reroll. 1/E = Easy (5 hearts), 2/H = Hard (3 hearts). Donuts: Pink=speed, Red=+1 heart, Blue=damage boost. Defeat all enemies, then reach the unicorn. Enter to restart.</div>
+
+    <!-- Username modal -->
+    <div id="username-modal" class="modal" style="display:none">
+      <div class="card">
+        <div class="row">Set your username to join the leaderboard</div>
+        <div class="row"><input id="username-input" type="text" placeholder="username (2–16, a-z A-Z 0-9 _)" maxlength="16"></div>
+        <div class="row"><button id="username-save" class="primary">Save</button></div>
+      </div>
+    </div>
+
+    <!-- Leaderboard modal -->
+    <div id="leaderboard-modal" class="modal" style="display:none">
+      <div class="card">
+        <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 8px;">
+          <div style="font-weight:600">Leaderboard</div>
+          <button id="leaderboard-close">Close</button>
+        </div>
+        <div id="leaderboard-tabs">
+          <div class="tab active" data-tab="high_score">High Score</div>
+          <div class="tab" data-tab="total_score">Total Score</div>
+        </div>
+        <div id="leaderboard-body"></div>
+      </div>
+    </div>
     <script type="module" src="./src/main.js"></script>
+    <script type="module" src="./src/ui.js"></script>
   </body>
   </html>
