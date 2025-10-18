@@ -86,6 +86,5 @@ function setActiveTab(by) {
 }
 
 function hide(el) { if (el) el.style.display = 'none'; }
-function show(el) { if (el) el.style.display = 'block'; }
+function show(el) { if (el) el.style.display = 'flex'; }
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])); }
-
