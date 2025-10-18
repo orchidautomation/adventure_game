@@ -12,11 +12,16 @@ export class Game {
     this.ctx = canvas.getContext('2d');
     this.bounds = { w: canvas.width, h: canvas.height };
     this.state = 'running'; // 'won' | 'lost' | 'paused' | 'menu'
-    this.score = 0;
+    this.level = 1;
+    this.levelScore = 0;
+    this.totalScore = 0;
     this.time = 0;
     this.difficulty = 'easy'; // 'easy' | 'hard'
-    this.level = 1;
     this.damagePerHit = 1;
+    this.pointsEnemy = 100;
+    this.pointsBoss = 300;
+    this.pointsDonut = 25;
+    this.damageBoostTimer = 0;
 
     this.platforms = [];
     this.donuts = [];
@@ -34,7 +39,7 @@ export class Game {
 
   reset() {
     this.state = 'running';
-    this.score = 0;
+    this.levelScore = 0;
     const lvl = createLevel(this.bounds, { difficulty: this.difficulty, level: this.level });
     this.platforms = lvl.platforms;
     this.donuts = lvl.donuts;
@@ -51,27 +56,35 @@ export class Game {
     this.player.invulnDuration = this.difficulty === 'hard' ? 0.55 : 1.0;
     // Compute damage per hit scaling with level
     this.recomputeDamage();
+    this.damageBoostTimer = 0;
   }
 
   spawnProjectile(x, y, vx, vy) {
     this.projectiles.push(new Projectile(x, y, vx, vy));
   }
 
-  spawnPlayerBullet(x, y, vx) {
-    this.playerBullets.push(new PlayerBullet(x, y, vx));
+  spawnPlayerBullet(x, y, vx, damage = 1) {
+    this.playerBullets.push(new PlayerBullet(x, y, vx, damage));
   }
 
   update(dt) {
     this.time += dt;
+    if (this.damageBoostTimer && this.damageBoostTimer > 0) {
+      this.damageBoostTimer = Math.max(0, this.damageBoostTimer - dt);
+    }
     // Difficulty menu before start
     if (this.state === 'menu') {
       if (this.input.wasPressed('Digit1') || this.input.wasPressed('KeyE')) {
         this.setDifficulty('easy');
+        this.level = 1;
+        this.totalScore = 0;
         this.reset();
         return;
       }
       if (this.input.wasPressed('Digit2') || this.input.wasPressed('KeyH')) {
         this.setDifficulty('hard');
+        this.level = 1;
+        this.totalScore = 0;
         this.reset();
         return;
       }
@@ -98,10 +111,12 @@ export class Game {
     if (this.state !== 'running') {
       if (this.input.wasPressed('Enter')) {
         if (this.state === 'won') {
+          this.totalScore += this.levelScore;
           this.level += 1;
           this.reset();
         } else if (this.state === 'lost') {
           this.level = 1;
+          this.totalScore = 0;
           this.reset();
         }
       }
@@ -123,7 +138,7 @@ export class Game {
       const speed = 420 * (this.player.boost > 0 ? 1.2 : 1.0);
       const bx = this.player.pos.x + (dir > 0 ? this.player.size.w : -8);
       const by = this.player.pos.y + this.player.size.h/2 - 2;
-      this.spawnPlayerBullet(bx, by, dir * speed);
+      this.spawnPlayerBullet(bx, by, dir * speed, this.getBulletDamage());
       this.sfx.shoot();
     }
 
@@ -222,6 +237,10 @@ Game.prototype.recomputeDamage = function() {
   const cap = this.difficulty === 'hard' ? 3 : 2;
   const scaled = Math.ceil(base * Math.pow(factor, Math.max(0, this.level - 1)));
   this.damagePerHit = Math.min(cap, Math.max(1, scaled));
+};
+
+Game.prototype.getBulletDamage = function() {
+  return (this.damageBoostTimer && this.damageBoostTimer > 0) ? 2 : 1;
 };
 
 Game.prototype.setDifficulty = function(mode) {

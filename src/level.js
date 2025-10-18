@@ -34,6 +34,13 @@ export function createLevel(bounds, opts = {}) {
   const span = Math.max(260, endX - startX);
   let prevY = clamp(groundY - randi(50, 75), yTop, yBottom);
 
+  const donutType = () => {
+    const r = Math.random();
+    if (r < 0.4) return 'speed';
+    if (r < 0.7) return 'life';
+    return 'damage';
+  };
+
   for (let i = 0; i < steps; i++) {
     const t = steps === 1 ? 0 : i / (steps - 1);
     const baseX = startX + t * span;
@@ -66,11 +73,11 @@ export function createLevel(bounds, opts = {}) {
     const mid = Math.floor(steps / 2);
     if (diff === 'easy') {
       if ((i === 1) || (i === mid) || (i === steps - 2)) {
-        donuts.push(new Donut(p.x + p.w / 2, p.y - 20));
+        donuts.push(new Donut(p.x + p.w / 2, p.y - 20, donutType()));
       }
     } else {
       if (i === mid) {
-        donuts.push(new Donut(p.x + p.w / 2, p.y - 20));
+        donuts.push(new Donut(p.x + p.w / 2, p.y - 20, donutType()));
       }
     }
 

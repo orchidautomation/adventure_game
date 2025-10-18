@@ -1,12 +1,13 @@
 import { overlap } from './player.js';
 
 export class PlayerBullet {
-  constructor(x, y, vx) {
+  constructor(x, y, vx, damage = 1) {
     this.pos = { x, y };
     this.size = { w: 8, h: 4 };
     this.vel = { x: vx, y: 0 };
     this.color = '#aaff66';
     this.dead = false;
+    this.damage = Math.max(1, Math.floor(damage));
   }
 
   rect() { return { x: this.pos.x, y: this.pos.y, w: this.size.w, h: this.size.h }; }
@@ -17,10 +18,26 @@ export class PlayerBullet {
     for (const e of game.enemies) {
       if (!e.dead && overlap(this.rect(), e.rect())) {
         if (typeof e.hp === 'number') {
-          e.hp -= 1;
-          if (e.hp <= 0) e.dead = true;
+          e.hp -= this.damage;
+          if (e.hp <= 0) {
+            if (!e.killed) {
+              e.killed = true;
+              e.dead = true;
+              const pts = e.boss ? (game.pointsBoss || 300) : (game.pointsEnemy || 100);
+              game.levelScore = (game.levelScore || 0) + pts;
+            } else {
+              e.dead = true;
+            }
+          }
         } else {
-          e.dead = true;
+          if (!e.killed) {
+            e.killed = true;
+            e.dead = true;
+            const pts = e.boss ? (game.pointsBoss || 300) : (game.pointsEnemy || 100);
+            game.levelScore = (game.levelScore || 0) + pts;
+          } else {
+            e.dead = true;
+          }
         }
         this.dead = true;
         break;

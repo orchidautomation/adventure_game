@@ -8,10 +8,10 @@ export function drawHUD(ctx, game) {
     drawHeart(ctx, x, y, 16);
   }
 
-  // Score
+  // Points and enemies
   ctx.fillStyle = '#ddd';
   ctx.font = '14px system-ui, sans-serif';
-  ctx.fillText(`Donuts: ${game.score}`, 10, 42);
+  ctx.fillText(`Pts: ${game.levelScore}`, 10, 42);
   ctx.fillText(`Enemies: ${game.enemies.length}`, 10, 60);
 
   // Difficulty label (top-right)
@@ -22,7 +22,8 @@ export function drawHUD(ctx, game) {
   ctx.fillText(text, game.bounds.w - m.width - 10, 24);
 
   // Level and damage (top-center)
-  const info = `Level ${game.level}  Dmg ${game.damagePerHit}hp`;
+  const total = (game.totalScore || 0) + (game.state === 'won' ? game.levelScore : 0);
+  const info = `Level ${game.level}  Dmg ${game.damagePerHit}hp  Total ${game.totalScore || 0}`;
   ctx.fillStyle = '#ddd';
   const m2 = ctx.measureText(info);
   ctx.fillText(info, (game.bounds.w - m2.width) / 2, 24);
@@ -31,6 +32,10 @@ export function drawHUD(ctx, game) {
   if (game.player.boost > 0) {
     ctx.fillStyle = '#aaf0ff';
     ctx.fillText('Speed Boost!', 120, 42);
+  }
+  if (game.damageBoostTimer && game.damageBoostTimer > 0) {
+    ctx.fillStyle = '#ffd166';
+    ctx.fillText('Damage Boost!', 220, 42);
   }
 
   if (game.state !== 'running') {
@@ -44,10 +49,18 @@ export function drawHUD(ctx, game) {
     else if (game.state === 'menu') title = 'Select Difficulty';
     centerText(ctx, title, game.bounds.w / 2, game.bounds.h / 2 - 10);
     ctx.font = '16px system-ui, sans-serif';
-    let sub = 'Press Enter to restart';
-    if (game.state === 'paused') sub = 'Press Esc to resume';
-    else if (game.state === 'menu') sub = '1/E = Easy (5 hearts), 2/H = Hard (3 hearts)';
-    centerText(ctx, sub, game.bounds.w / 2, game.bounds.h / 2 + 20);
+    if (game.state === 'won') {
+      centerText(ctx, `Level Pts: ${game.levelScore}  Total: ${game.totalScore + game.levelScore}`, game.bounds.w / 2, game.bounds.h / 2 + 16);
+      centerText(ctx, 'Press Enter to advance', game.bounds.w / 2, game.bounds.h / 2 + 36);
+    } else if (game.state === 'paused') {
+      centerText(ctx, 'Press Esc to resume', game.bounds.w / 2, game.bounds.h / 2 + 20);
+    } else if (game.state === 'menu') {
+      centerText(ctx, '1/E = Easy (5 hearts), 2/H = Hard (3 hearts)', game.bounds.w / 2, game.bounds.h / 2 + 20);
+    } else {
+      const final = (game.totalScore || 0) + (game.levelScore || 0);
+      centerText(ctx, `Final Score: ${final}`, game.bounds.w / 2, game.bounds.h / 2 + 16);
+      centerText(ctx, 'Press Enter to restart', game.bounds.w / 2, game.bounds.h / 2 + 36);
+    }
   }
 }
 
