@@ -1,0 +1,9 @@
+{
+  "outputDirectory": ".",
+  "functions": {
+    "api/**": {
+      "runtime": "edge"
+    }
+  }
+}
+
