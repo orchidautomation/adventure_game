@@ -1,9 +1,3 @@
 {
-  "outputDirectory": ".",
-  "functions": {
-    "api/**": {
-      "runtime": "edge"
-    }
-  }
+  "outputDirectory": "."
 }
-
