@@ -2,7 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#121212" />
+    <link rel="manifest" href="/manifest.json" />
     <title>Unicorn Donut Dash – MVP</title>
     <style>
       html, body { height: 100%; margin: 0; background: #121212; color: #eee; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
@@ -25,6 +29,26 @@
       #leaderboard-tabs .active { background: #333; color: #fff; border-color: #555; }
       .lb-row { display: grid; grid-template-columns: 36px 1fr 100px 110px 70px 60px; gap: 6px; padding: 4px 0; border-bottom: 1px solid #2a2a2a; font-size: 13px; color: #ddd; }
       .lb-row div { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      /* Touch controls */
+      #touch-controls { position: fixed; inset: 0; pointer-events: none; z-index: 100; display: none; }
+      #touch-controls.active { display: block; }
+      .touch-btn { position: fixed; pointer-events: auto; background: rgba(255, 255, 255, 0.2); border: 2px solid rgba(255, 255, 255, 0.4); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; color: rgba(255, 255, 255, 0.9); user-select: none; touch-action: none; transition: opacity 0.1s; }
+      .touch-btn:active { opacity: 0.8; }
+      #btn-jump { width: 80px; height: 80px; right: 100px; bottom: 100px; }
+      #btn-shoot { width: 80px; height: 80px; right: 20px; bottom: 180px; }
+      /* Mobile responsive adjustments */
+      @media (max-width: 768px) {
+        .hint { font-size: 10px; bottom: 5px; }
+        #topbar { font-size: 11px; }
+        #btn-leaderboard { padding: 4px 8px; font-size: 11px; }
+        #leaderboard-modal .card { width: 90vw; max-width: 520px; }
+        .lb-row { font-size: 11px; grid-template-columns: 30px 1fr 80px 90px 60px 50px; }
+      }
+      @media (max-width: 480px) {
+        .hint { display: none; }
+        #leaderboard-modal .card { width: 95vw; }
+        .lb-row { font-size: 10px; grid-template-columns: 24px 1fr 70px 80px 50px 40px; gap: 4px; }
+      }
     </style>
   </head>
   <body>
@@ -36,6 +60,12 @@
       <button id="btn-leaderboard">Leaderboard</button>
     </div>
     <div class="hint">Arrows to move, Space to jump (double jump). F to shoot. Esc to pause/resume. R to reroll. 1/E = Easy (5 hearts), 2/H = Hard (3 hearts). Donuts: Pink=speed, Red=+1 heart, Blue=damage boost. Defeat all enemies, then reach the unicorn. Enter to restart.</div>
+
+    <!-- Touch controls (mobile) -->
+    <div id="touch-controls">
+      <div id="btn-jump" class="touch-btn">JUMP</div>
+      <div id="btn-shoot" class="touch-btn">SHOOT</div>
+    </div>
 
     <!-- Username modal -->
     <div id="username-modal" class="modal" style="display:none">
