@@ -11,18 +11,31 @@ Play
 - Deployed: open your Vercel production URL for this project.
 
 Controls
-- On start: choose difficulty — 1/E = Easy (5 hearts), 2/H = Hard (3 hearts)
-- Move: Left/Right arrows
-- Jump: Space (double jump)
-- Shoot: F (aims where you face)
-- Pause/Resume: Esc
-- Reroll level: R
-- Restart (after win/loss): Enter
+- **Desktop:**
+  - On start: choose difficulty — 1/E = Easy (5 hearts), 2/H = Hard (3 hearts)
+  - Move: Left/Right arrows
+  - Jump: Space (double jump)
+  - Shoot: F (aims where you face)
+  - Pause/Resume: Esc
+  - Reroll level: R
+  - Restart (after win/loss): Enter
+
+- **Mobile/Touch:**
+  - Virtual joystick (left side): Move left/right
+  - JUMP button (right side): Jump (double jump)
+  - SHOOT button (right side): Shoot projectiles
+  - Touch controls automatically appear on touch-enabled devices
 
 Goal
 - Defeat all enemies, then reach the unicorn to clear the level.
 
 Features
+- **Mobile PWA Support:**
+  - Touch controls with virtual joystick
+  - Responsive design for mobile/tablet screens
+  - PWA manifest for "Add to Home Screen"
+  - Service worker for offline play
+  - Works on iOS and Android
 - Procedural platform layouts per run with ample spacing
 - Difficulty menu: Easy/Hard with tuned hearts and i‑frames
 - Enemies fire toward the player; de‑synced timers with jitter
@@ -64,9 +77,12 @@ Architecture
 
 Project Structure
 - `index.html` – Canvas + script loader and UI overlays
-- `src/main.js` – boot + frame loop + responsive scaling
+- `manifest.json` – PWA manifest for mobile install
+- `sw.js` – Service worker for offline support
+- `src/main.js` – boot + frame loop + responsive scaling + PWA registration
 - `src/game.js` – state, systems orchestration, transitions
-- `src/input.js` – keyboard handling (skips inputs/textareas)
+- `src/input.js` – keyboard + touch input handling (skips inputs/textareas)
+- `src/virtual-joystick.js` – Virtual joystick for touch controls
 - `src/player.js` – movement, jumping, hearts, i‑frames
 - `src/enemy.js` – enemies (aimed shots, jitter), boss support
 - `src/projectile.js` – enemy bullets
