@@ -18,14 +18,19 @@ Successfully ported Unicorn Donut Dash to mobile as a Progressive Web App (PWA) 
   - Semi-transparent floating buttons on bottom-right
   - Visual feedback on press
 
-### 2. Input System Updates (`src/input.js`)
+### 2. Touch-Friendly Start Menu
+- In-game overlay with Easy/Hard buttons
+- Tap to select difficulty — no keyboard required
+- Visible only on the start screen after username is set
+
+### 3. Input System Updates (`src/input.js`)
 - Added `setJoystick()` method to integrate virtual joystick
 - Added `registerTouchButton()` for touch button handling
 - Modified `beginFrame()` to translate joystick delta to arrow keys
 - Maintains backward compatibility with keyboard controls
 - Works seamlessly on both desktop and mobile
 
-### 3. Responsive Design
+### 4. Responsive Design
 - Updated viewport meta tag with mobile-optimized settings
 - Added mobile-specific CSS media queries:
   - Tablets (≤768px): Smaller fonts, responsive leaderboard
@@ -33,7 +38,7 @@ Successfully ported Unicorn Donut Dash to mobile as a Progressive Web App (PWA) 
 - Leaderboard modal scales from 520px to 95vw on small screens
 - Touch button positioning optimized for thumb reach
 
-### 4. PWA Features
+### 5. PWA Features
 - **Manifest** (`manifest.json`)
   - App name, icons, theme colors
   - Standalone display mode
@@ -46,11 +51,20 @@ Successfully ported Unicorn Donut Dash to mobile as a Progressive Web App (PWA) 
   - Network fallback for API calls
   - Automatic cache cleanup on version change
 
-### 5. Mobile Optimizations
+### 6. Mobile Optimizations
 - Disabled user scaling (`user-scalable=no`)
 - Added `touch-action: none` to prevent scroll interference
 - Apple-specific meta tags for iOS home screen
 - Theme color for browser chrome
+
+### 7. Mobile UX Enhancements
+- On-screen Pause/Restart buttons (top-right)
+- State overlay buttons for won/lost/paused (Continue/Resume/Restart)
+- Wake Lock to prevent screen dimming during play (where supported)
+- Haptic feedback on jump/shoot/hit
+- Rotation hint overlay in portrait
+- Right-side tap-to-jump zone
+- Settings modal: left-handed layout, button sizes, dynamic joystick option
 
 ## Technical Details
 
@@ -67,9 +81,10 @@ Virtual joystick translates analog input to digital:
 - |deltaX| ≤ 0.3 → No movement
 
 ### Files Modified
-- `index.html` - Added meta tags, touch control UI, responsive CSS
+- `index.html` - Added meta tags, touch control UI, responsive CSS, and touch-friendly start menu overlay
 - `src/main.js` - Touch control initialization, service worker registration
 - `src/input.js` - Touch input abstraction layer
+- `src/ui.js` - Username + leaderboard UI, and logic to show/hide start menu and handle Easy/Hard taps
 
 ### Files Created
 - `src/virtual-joystick.js` - Virtual joystick implementation
@@ -102,10 +117,8 @@ Virtual joystick translates analog input to digital:
 ## Known Limitations
 
 ### Current
-- No pause/restart touch buttons (still requires Esc/Enter keys or browser controls)
-- Difficulty selection on start still keyboard-only (1/E/2/H keys)
 - Portrait mode works but landscape is optimal
-- No haptic feedback (could be added via Vibration API)
+- PWA icons may still be placeholders
 
 ### Future Enhancements
 - Add on-screen pause/menu button

@@ -9,37 +9,62 @@ const ctx = canvas.getContext('2d');
 const input = new Input(window);
 const game = new Game(input, canvas);
 initUI(game);
+try {
+  const d = localStorage.getItem('pref_difficulty');
+  if (d === 'easy' || d === 'hard') game.setDifficulty(d);
+} catch {}
 
 // Initialize touch controls
+function readPrefs() {
+  try { return JSON.parse(localStorage.getItem('control_prefs') || '{}'); } catch { return {}; }
+}
+
+let joystick = null;
+function applyJoystick(prefs) {
+  // Destroy existing joystick
+  if (joystick) { try { joystick.destroy(); } catch {} joystick = null; }
+
+  const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+  if (!isTouchDevice) return;
+
+  const touchControls = document.getElementById('touch-controls');
+  if (touchControls) touchControls.classList.add('active');
+
+  // Determine base position
+  const leftHanded = !!(prefs && prefs.leftHanded);
+  const dynamicStick = !!(prefs && prefs.dynamicStick);
+  const baseX = leftHanded ? Math.max(100, window.innerWidth - 100 - (window.visualViewport?.offsetLeft || 0)) : 100;
+  const baseY = 100;
+
+  joystick = new VirtualJoystick(document.body, {
+    baseX, baseY, stickRadius: 50, limitStickTravel: true, dynamic: dynamicStick, preferRightSide: leftHanded
+  });
+  input.setJoystick(joystick);
+
+  // Register touch buttons (jump/shoot)
+  const btnJump = document.getElementById('btn-jump');
+  const btnShoot = document.getElementById('btn-shoot');
+  if (btnJump) { if (btnJump._inputCleanup) btnJump._inputCleanup(); input.registerTouchButton('Space', btnJump); }
+  if (btnShoot) { if (btnShoot._inputCleanup) btnShoot._inputCleanup(); input.registerTouchButton('KeyF', btnShoot); }
+
+  // Right-side tap-to-jump zone
+  const jumpZone = document.getElementById('tap-jump-zone');
+  if (jumpZone) { if (jumpZone._inputCleanup) jumpZone._inputCleanup(); input.registerTouchButton('Space', jumpZone); }
+}
+
 function initTouchControls() {
   // Detect if device has touch capability
   const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
   if (isTouchDevice) {
-    // Show touch controls
-    const touchControls = document.getElementById('touch-controls');
-    if (touchControls) {
-      touchControls.classList.add('active');
-    }
-
-    // Initialize virtual joystick
-    const joystick = new VirtualJoystick(document.body, {
-      baseX: 100,
-      baseY: 100,
-      stickRadius: 50,
-      limitStickTravel: true
-    });
-    input.setJoystick(joystick);
-
-    // Register touch buttons
-    const btnJump = document.getElementById('btn-jump');
-    const btnShoot = document.getElementById('btn-shoot');
-
-    if (btnJump) input.registerTouchButton('Space', btnJump);
-    if (btnShoot) input.registerTouchButton('KeyF', btnShoot);
+    applyJoystick(readPrefs());
   }
 }
 initTouchControls();
+
+// Re-apply joystick when control settings change or on resize
+window.addEventListener('control-settings-change', (e) => applyJoystick(e.detail || readPrefs()));
+window.addEventListener('resize', () => applyJoystick(readPrefs()));
 
 let last = performance.now();
 function frame(now) {
@@ -81,6 +106,35 @@ function resizeCanvas() {
 }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
+
+// Wake Lock: keep screen on while playing
+let wakeLock = null;
+async function requestWakeLock() {
+  try {
+    if ('wakeLock' in navigator && !wakeLock) {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+    }
+  } catch {}
+}
+function releaseWakeLock() {
+  try { if (wakeLock) { wakeLock.release(); wakeLock = null; } } catch {}
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') requestWakeLock();
+  else releaseWakeLock();
+});
+window.addEventListener('pointerdown', requestWakeLock, { passive: true });
+window.addEventListener('beforeunload', releaseWakeLock);
+
+// Rotate to landscape overlay
+const rotateOverlay = document.getElementById('rotate-overlay');
+function updateRotateOverlay() {
+  const portrait = window.innerHeight > window.innerWidth;
+  if (rotateOverlay) rotateOverlay.classList.toggle('active', portrait);
+}
+window.addEventListener('resize', updateRotateOverlay);
+updateRotateOverlay();
 
 // Register service worker for PWA offline support
 if ('serviceWorker' in navigator) {

@@ -9,6 +9,8 @@ export class VirtualJoystick {
     this.baseY = options.baseY || 100;
     this.limitStickTravel = options.limitStickTravel !== false;
     this.stickRadius = options.stickRadius || 50;
+    this.dynamic = !!options.dynamic; // spawn where first touched
+    this.preferRightSide = !!options.preferRightSide; // when dynamic, accept touches on this side
 
     this._pressed = false;
     this._baseEl = null;
@@ -38,6 +40,7 @@ export class VirtualJoystick {
     base.style.touchAction = 'none';
     base.style.userSelect = 'none';
     base.style.zIndex = '1000';
+    if (this.dynamic) base.style.display = 'none';
     this._baseEl = base;
 
     // Stick (inner circle)
@@ -63,6 +66,13 @@ export class VirtualJoystick {
       this._touchId = touchId;
       this._stickX = 0;
       this._stickY = 0;
+      if (this.dynamic) {
+        // Position base centered at touch location
+        this._baseEl.style.display = 'block';
+        this._baseEl.style.left = `${x - 60}px`;
+        this._baseEl.style.bottom = '';
+        this._baseEl.style.top = `${y - 60}px`;
+      }
       this._updateStick();
     };
 
@@ -106,7 +116,7 @@ export class VirtualJoystick {
       e.preventDefault();
       const touch = e.changedTouches[0];
       onDown(touch.clientX, touch.clientY, touch.identifier);
-    });
+    }, { passive: false });
 
     this.container.addEventListener('touchmove', (e) => {
       if (!this._pressed) return;
@@ -117,7 +127,7 @@ export class VirtualJoystick {
           break;
         }
       }
-    });
+    }, { passive: false });
 
     this.container.addEventListener('touchend', (e) => {
       if (!this._pressed) return;
@@ -128,7 +138,29 @@ export class VirtualJoystick {
           break;
         }
       }
-    });
+    }, { passive: false });
+
+    // Dynamic activation anywhere on the preferred side
+    if (this.dynamic) {
+      const onDynStart = (x, y, id) => {
+        if (this._pressed) return;
+        const mid = window.innerWidth / 2;
+        const isRight = x >= mid;
+        if (this.preferRightSide ? !isRight : isRight) return; // reject opposite side
+        onDown(x, y, id);
+      };
+      this.container.addEventListener('touchstart', (e) => {
+        for (let touch of e.changedTouches) {
+          e.preventDefault();
+          onDynStart(touch.clientX, touch.clientY, touch.identifier);
+          break;
+        }
+      }, { passive: false });
+      this.container.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        onDynStart(e.clientX, e.clientY, 'mouse');
+      });
+    }
 
     // Mouse events (for desktop testing)
     this._baseEl.addEventListener('mousedown', (e) => {

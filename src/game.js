@@ -22,6 +22,8 @@ export class Game {
     this.pointsBoss = 300;
     this.pointsDonut = 25;
     this.damageBoostTimer = 0;
+    this.fireCooldown = 0; // seconds until next bullet
+    this.fireRate = 0.16; // seconds between bullets when held
 
     this.platforms = [];
     this.donuts = [];
@@ -85,6 +87,7 @@ export class Game {
     if (this.externalPause) {
       return;
     }
+    if (this.fireCooldown > 0) this.fireCooldown = Math.max(0, this.fireCooldown - dt);
     if (this.damageBoostTimer && this.damageBoostTimer > 0) {
       this.damageBoostTimer = Math.max(0, this.damageBoostTimer - dt);
     }
@@ -151,13 +154,15 @@ export class Game {
     // The main loop will call input.beginFrame() before update.
 
     // Player shooting
-    if (this.input.wasPressed('KeyF')) {
+    if (this.input.wasPressed('KeyF') || (this.input.isDown('KeyF') && this.fireCooldown === 0)) {
+      this.fireCooldown = this.fireRate;
       const dir = this.player.lastDir >= 0 ? 1 : -1;
       const speed = 420 * (this.player.boost > 0 ? 1.2 : 1.0);
       const bx = this.player.pos.x + (dir > 0 ? this.player.size.w : -8);
       const by = this.player.pos.y + this.player.size.h/2 - 2;
       this.spawnPlayerBullet(bx, by, dir * speed, this.getBulletDamage());
       this.sfx.shoot();
+      try { if (navigator.vibrate) navigator.vibrate(15); } catch {}
     }
 
     // Update moving platforms
@@ -187,7 +192,7 @@ export class Game {
       this.input,
       this.platforms,
       this.bounds,
-      { onJump: () => this.sfx.jump() },
+      { onJump: () => { this.sfx.jump(); try { if (navigator.vibrate) navigator.vibrate(10); } catch {} } },
       this.enemies.map(e => e.rect())
     );
 
@@ -196,6 +201,7 @@ export class Game {
       if (overlap(this.player.rect(), e.rect())) {
         const took = this.player.hurt();
         if (took) this.sfx.hit();
+        if (took) { try { if (navigator.vibrate) navigator.vibrate(60); } catch {} }
         if (took && this.player.hearts <= 0) {
           this.lose();
         }

@@ -36,31 +36,28 @@ self.addEventListener('install', (event) => {
 
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', (event) => {
+  const req = event.request;
+  const url = new URL(req.url);
+  const accept = req.headers.get('accept') || '';
+  const isApi = url.pathname.startsWith('/api/') || accept.includes('application/json');
+
+  if (isApi) {
+    // Network-first for API; don't cache
+    event.respondWith(fetch(req).catch(() => caches.match(req)));
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request)
+    caches.match(req)
       .then((response) => {
-        // Cache hit - return response
-        if (response) {
-          return response;
-        }
-
-        // Clone the request
-        const fetchRequest = event.request.clone();
-
+        if (response) return response;
+        const fetchRequest = req.clone();
         return fetch(fetchRequest).then((response) => {
-          // Check if valid response
           if (!response || response.status !== 200 || response.type !== 'basic') {
             return response;
           }
-
-          // Clone the response
           const responseToCache = response.clone();
-
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-
+          caches.open(CACHE_NAME).then((cache) => { cache.put(req, responseToCache); });
           return response;
         });
       })

@@ -31,8 +31,8 @@ export class Input {
       this.down.delete(e.code);
     };
 
-    target.addEventListener('keydown', this._onKeyDown);
-    target.addEventListener('keyup', this._onKeyUp);
+    target.addEventListener('keydown', this._onKeyDown, { passive: false });
+    target.addEventListener('keyup', this._onKeyUp, { passive: false });
   }
 
   setJoystick(joystick) {
@@ -62,17 +62,17 @@ export class Input {
       element.style.opacity = '1';
     };
 
-    element.addEventListener('touchstart', onStart);
-    element.addEventListener('touchend', onEnd);
-    element.addEventListener('touchcancel', onEnd);
+    element.addEventListener('touchstart', onStart, { passive: false });
+    element.addEventListener('touchend', onEnd, { passive: false });
+    element.addEventListener('touchcancel', onEnd, { passive: false });
     element.addEventListener('mousedown', onStart);
     element.addEventListener('mouseup', onEnd);
 
     // Store cleanup
     element._inputCleanup = () => {
-      element.removeEventListener('touchstart', onStart);
-      element.removeEventListener('touchend', onEnd);
-      element.removeEventListener('touchcancel', onEnd);
+      element.removeEventListener('touchstart', onStart, { passive: false });
+      element.removeEventListener('touchend', onEnd, { passive: false });
+      element.removeEventListener('touchcancel', onEnd, { passive: false });
       element.removeEventListener('mousedown', onStart);
       element.removeEventListener('mouseup', onEnd);
     };
