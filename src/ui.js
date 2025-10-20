@@ -35,6 +35,7 @@ export function initUI(game) {
   elements.optLeftHanded = document.getElementById('opt-left-handed');
   elements.optButtonSize = document.getElementById('opt-button-size');
   elements.optDynamicStick = document.getElementById('opt-dynamic-stick');
+  elements.optRenderScale = document.getElementById('opt-render-scale');
   elements.settingsClose = document.getElementById('settings-close');
   elements.settingsSave = document.getElementById('settings-save');
 
@@ -124,12 +125,14 @@ export function initUI(game) {
   elements.optLeftHanded.checked = !!saved.leftHanded;
   elements.optButtonSize.value = saved.btnSize || 'm';
   elements.optDynamicStick.checked = !!saved.dynamicStick;
+  elements.optRenderScale.value = String(saved.renderScale || 1);
   elements.settingsClose.addEventListener('click', () => hide(elements.settingsModal));
   elements.settingsSave.addEventListener('click', () => {
     const prefs = {
       leftHanded: !!elements.optLeftHanded.checked,
       btnSize: elements.optButtonSize.value || 'm',
       dynamicStick: !!elements.optDynamicStick.checked,
+      renderScale: clampRenderScale(parseFloat(elements.optRenderScale.value || '1')),
     };
     saveControlPrefs(prefs);
     applyControlPrefs(prefs);
@@ -368,4 +371,9 @@ function applyControlPrefs(p) {
   document.body.classList.remove('btn-size-s', 'btn-size-l');
   if (p.btnSize === 's') document.body.classList.add('btn-size-s');
   if (p.btnSize === 'l') document.body.classList.add('btn-size-l');
+}
+
+function clampRenderScale(x) {
+  if (typeof x !== 'number' || Number.isNaN(x)) return 1;
+  return Math.min(1, Math.max(0.33, x));
 }

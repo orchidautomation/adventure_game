@@ -20,6 +20,7 @@ function readPrefs() {
 }
 
 let joystick = null;
+let renderScale = 1;
 function applyJoystick(prefs) {
   // Destroy existing joystick
   if (joystick) { try { joystick.destroy(); } catch {} joystick = null; }
@@ -67,15 +68,40 @@ initTouchControls();
 // Re-apply joystick when control settings change or on resize
 window.addEventListener('control-settings-change', (e) => applyJoystick(e.detail || readPrefs()));
 window.addEventListener('resize', () => applyJoystick(readPrefs()));
+// Also re-apply render scale when settings change / resize
+window.addEventListener('control-settings-change', (e) => {
+  const prefs = e.detail || readPrefs();
+  applyRenderScale(prefs.renderScale || 1);
+});
+window.addEventListener('resize', () => {
+  const prefs = readPrefs();
+  applyRenderScale(prefs.renderScale || 1);
+});
 
 let last = performance.now();
+// Simple FPS meter
+let fpsEl = document.getElementById('fps');
+let fpsCount = 0, fpsAccum = 0, fpsLast = performance.now();
 function frame(now) {
   const dt = Math.min(0.05, (now - last) / 1000);
   last = now;
+  // Apply render transform from logical space (800x450) to chosen internal resolution
+  game.ctx.setTransform(renderScale, 0, 0, renderScale, 0, 0);
   game.update(dt);
   game.draw();
   // Clear edge-triggered inputs at the end of the frame
   input.beginFrame();
+  // FPS update every ~0.5s
+  fpsCount += 1;
+  const elapsed = now - fpsLast;
+  fpsAccum += elapsed;
+  fpsLast = now;
+  if (fpsEl && fpsAccum >= 500) {
+    const fps = Math.round((fpsCount * 1000) / fpsAccum);
+    fpsEl.textContent = `${fps} fps`;
+    fpsCount = 0;
+    fpsAccum = 0;
+  }
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
@@ -108,6 +134,24 @@ function resizeCanvas() {
 }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
+// Apply persisted render scale at startup
+try {
+  const prefs0 = readPrefs();
+  applyRenderScale(prefs0.renderScale || 1);
+} catch {}
+
+// Internal render resolution scaling (for higher FPS on slower devices)
+function applyRenderScale(scale) {
+  renderScale = Math.min(1, Math.max(0.33, Number(scale) || 1));
+  const w = Math.max(1, Math.round(BASE_W * renderScale));
+  const h = Math.max(1, Math.round(BASE_H * renderScale));
+  if (canvas.width !== w || canvas.height !== h) {
+    canvas.width = w;
+    canvas.height = h;
+  }
+  // Keep CSS size via resizeCanvas(); transform set each frame
+  resizeCanvas();
+}
 
 // Wake Lock: keep screen on while playing
 let wakeLock = null;
