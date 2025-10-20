@@ -37,7 +37,9 @@ function applyJoystick(prefs) {
   const baseY = 100;
 
   joystick = new VirtualJoystick(document.body, {
-    baseX, baseY, stickRadius: 50, limitStickTravel: true, dynamic: dynamicStick, preferRightSide: leftHanded
+    baseX, baseY, stickRadius: 50, limitStickTravel: true,
+    dynamic: dynamicStick, preferRightSide: leftHanded,
+    activationEl: canvas
   });
   input.setJoystick(joystick);
 

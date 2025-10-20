@@ -5,6 +5,7 @@
 export class VirtualJoystick {
   constructor(container, options = {}) {
     this.container = container;
+    this.activationEl = options.activationEl || null; // where dynamic activation is allowed (e.g., canvas)
     this.baseX = options.baseX || 100;
     this.baseY = options.baseY || 100;
     this.limitStickTravel = options.limitStickTravel !== false;
@@ -39,7 +40,7 @@ export class VirtualJoystick {
     base.style.bottom = `${this.baseY - 60}px`;
     base.style.touchAction = 'none';
     base.style.userSelect = 'none';
-    base.style.zIndex = '1000';
+    base.style.zIndex = '90'; // under UI overlays/buttons
     if (this.dynamic) base.style.display = 'none';
     this._baseEl = base;
 
@@ -61,6 +62,15 @@ export class VirtualJoystick {
   }
 
   _setupEvents() {
+    this._listeners = this._listeners || {};
+    const isInteractiveTarget = (el) => {
+      if (!el || !el.closest) return false;
+      const selectors = [
+        '#topbar', '.modal', '#state-overlay', '#start-menu', '#touch-controls', '.touch-btn',
+        'button', 'input', 'select', 'a', '#leaderboard-modal', '#username-modal', '#settings-modal'
+      ];
+      return selectors.some((sel) => el.closest(sel));
+    };
     const onDown = (x, y, touchId) => {
       this._pressed = true;
       this._touchId = touchId;
@@ -112,13 +122,14 @@ export class VirtualJoystick {
     };
 
     // Touch events
-    this._baseEl.addEventListener('touchstart', (e) => {
+    this._listeners.baseTouchStart = (e) => {
       e.preventDefault();
       const touch = e.changedTouches[0];
       onDown(touch.clientX, touch.clientY, touch.identifier);
-    }, { passive: false });
+    };
+    this._baseEl.addEventListener('touchstart', this._listeners.baseTouchStart, { passive: false });
 
-    this.container.addEventListener('touchmove', (e) => {
+    this._listeners.containerTouchMove = (e) => {
       if (!this._pressed) return;
       for (let touch of e.changedTouches) {
         if (touch.identifier === this._touchId) {
@@ -127,9 +138,10 @@ export class VirtualJoystick {
           break;
         }
       }
-    }, { passive: false });
+    };
+    this.container.addEventListener('touchmove', this._listeners.containerTouchMove, { passive: false });
 
-    this.container.addEventListener('touchend', (e) => {
+    this._listeners.containerTouchEnd = (e) => {
       if (!this._pressed) return;
       for (let touch of e.changedTouches) {
         if (touch.identifier === this._touchId) {
@@ -138,47 +150,54 @@ export class VirtualJoystick {
           break;
         }
       }
-    }, { passive: false });
+    };
+    this.container.addEventListener('touchend', this._listeners.containerTouchEnd, { passive: false });
 
     // Dynamic activation anywhere on the preferred side
     if (this.dynamic) {
-      const onDynStart = (x, y, id) => {
+      const onDynStart = (x, y, id, originalEvent) => {
         if (this._pressed) return;
         const mid = window.innerWidth / 2;
         const isRight = x >= mid;
         if (this.preferRightSide ? !isRight : isRight) return; // reject opposite side
+        if (originalEvent && isInteractiveTarget(originalEvent.target)) return; // don't steal UI taps
+        if (originalEvent) originalEvent.preventDefault();
         onDown(x, y, id);
       };
-      this.container.addEventListener('touchstart', (e) => {
+      const targetEl = this.activationEl || this.container;
+      this._listeners.dynamicTouchStart = (e) => {
         for (let touch of e.changedTouches) {
-          e.preventDefault();
-          onDynStart(touch.clientX, touch.clientY, touch.identifier);
+          onDynStart(touch.clientX, touch.clientY, touch.identifier, e);
           break;
         }
-      }, { passive: false });
-      this.container.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        onDynStart(e.clientX, e.clientY, 'mouse');
-      });
+      };
+      targetEl.addEventListener('touchstart', this._listeners.dynamicTouchStart, { passive: false });
+      this._listeners.dynamicMouseDown = (e) => {
+        onDynStart(e.clientX, e.clientY, 'mouse', e);
+      };
+      targetEl.addEventListener('mousedown', this._listeners.dynamicMouseDown);
     }
 
     // Mouse events (for desktop testing)
-    this._baseEl.addEventListener('mousedown', (e) => {
+    this._listeners.baseMouseDown = (e) => {
       e.preventDefault();
       onDown(e.clientX, e.clientY, 'mouse');
-    });
+    };
+    this._baseEl.addEventListener('mousedown', this._listeners.baseMouseDown);
 
-    this.container.addEventListener('mousemove', (e) => {
+    this._listeners.containerMouseMove = (e) => {
       if (!this._pressed) return;
       e.preventDefault();
       onMove(e.clientX, e.clientY);
-    });
+    };
+    this.container.addEventListener('mousemove', this._listeners.containerMouseMove);
 
-    this.container.addEventListener('mouseup', (e) => {
+    this._listeners.containerMouseUp = (e) => {
       if (!this._pressed) return;
       e.preventDefault();
       onUp();
-    });
+    };
+    this.container.addEventListener('mouseup', this._listeners.containerMouseUp);
   }
 
   _updateStick() {
@@ -200,8 +219,23 @@ export class VirtualJoystick {
   }
 
   destroy() {
-    if (this._baseEl && this._baseEl.parentNode) {
-      this._baseEl.parentNode.removeChild(this._baseEl);
-    }
+    try {
+      if (this._listeners) {
+        if (this._listeners.baseTouchStart) this._baseEl.removeEventListener('touchstart', this._listeners.baseTouchStart, { passive: false });
+        if (this._listeners.baseMouseDown) this._baseEl.removeEventListener('mousedown', this._listeners.baseMouseDown);
+        if (this._listeners.containerTouchMove) this.container.removeEventListener('touchmove', this._listeners.containerTouchMove, { passive: false });
+        if (this._listeners.containerTouchEnd) this.container.removeEventListener('touchend', this._listeners.containerTouchEnd, { passive: false });
+        if (this._listeners.containerMouseMove) this.container.removeEventListener('mousemove', this._listeners.containerMouseMove);
+        if (this._listeners.containerMouseUp) this.container.removeEventListener('mouseup', this._listeners.containerMouseUp);
+        const targetEl = this.activationEl || this.container;
+        if (this._listeners.dynamicTouchStart) targetEl.removeEventListener('touchstart', this._listeners.dynamicTouchStart, { passive: false });
+        if (this._listeners.dynamicMouseDown) targetEl.removeEventListener('mousedown', this._listeners.dynamicMouseDown);
+      }
+    } catch {}
+    try {
+      if (this._baseEl && this._baseEl.parentNode) {
+        this._baseEl.parentNode.removeChild(this._baseEl);
+      }
+    } catch {}
   }
 }
