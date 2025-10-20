@@ -1,4 +1,4 @@
-const CACHE_NAME = 'unicorn-donut-dash-v1';
+const CACHE_NAME = 'unicorn-donut-dash-v3';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -40,10 +40,25 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url);
   const accept = req.headers.get('accept') || '';
   const isApi = url.pathname.startsWith('/api/') || accept.includes('application/json');
+  const isHtml = req.mode === 'navigate' || accept.includes('text/html');
 
   if (isApi) {
     // Network-first for API; don't cache
     event.respondWith(fetch(req).catch(() => caches.match(req)));
+    return;
+  }
+
+  if (isHtml) {
+    // Network-first for HTML to avoid stale UI
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          const resClone = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, resClone)).catch(() => {});
+          return res;
+        })
+        .catch(() => caches.match(req).then((r) => r || caches.match('/index.html')))
+    );
     return;
   }
 
